@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech News Aggregator - Live Tech News from the Internet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(90deg, #0f3460, #533483);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .status-banner {
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            color: #d7e6ff;
+        }
+        .news-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .news-card-empty {
+            padding: 24px;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        .news-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+        .news-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .news-image:hover {
+            transform: scale(1.1);
+        }
+        .zoom-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .zoom-overlay.active {
+            display: flex;
+        }
+        .zoom-overlay img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255,255,255,0.2);
+        }
+        .news-content {
+            padding: 20px;
+        }
+        .news-source {
+            color: #00d9ff;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .news-title {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .news-title a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .news-title a:hover {
+            color: #00d9ff;
+        }
+        .news-description {
+            color: #ccc;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #888;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+        }
+        .comment-section {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,217,255,0.1);
+            border-radius: 8px;
+            font-style: italic;
+        }
+        .comment-icon {
+            margin-right: 5px;
+        }
+        .media-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .media-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .media-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        .media-link.disabled {
+            opacity: 0.55;
+            pointer-events: none;
+        }
+        .spell-checker {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .spell-checker h2 {
+            margin-bottom: 20px;
+            color: #00d9ff;
+        }
+        .spell-check-form {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .spell-check-form input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            outline: none;
+            transition: background 0.3s;
+        }
+        .spell-check-form input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        .spell-check-form input:focus {
+            background: rgba(255,255,255,0.3);
+        }
+        .spell-check-form button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #1a1a2e;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .spell-check-form button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,217,255,0.4);
+        }
+        .spell-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .spell-result.correct {
+            display: block;
+            background: rgba(0,255,100,0.2);
+            border: 1px solid rgba(0,255,100,0.5);
+        }
+        .spell-result.incorrect {
+            display: block;
+            background: rgba(255,0,100,0.2);
+            border: 1px solid rgba(255,0,100,0.5);
+        }
+        .spell-result h3 {
+            margin-bottom: 10px;
+        }
+        .spell-result .word {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .suggestions {
+            margin-top: 15px;
+            color: #ccc;
+        }
+        .llm-analysis {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        .llm-analysis h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        .analysis-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .analysis-section h3 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .comparison-table th {
+            color: #00d9ff;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 30px;
+            opacity: 0.7;
+        }
+        .source-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-right: 8px;
+        }
+        .source-techcrunch { background: #0a7c0a; }
+        .source-verge { background: #e63946; }
+        .source-wired { background: #111; border: 1px solid #333; }
+        .source-engadget { background: #7b2cbf; }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8em; }
+            .news-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tech News Aggregator</h1>
+            <p class="subtitle">Live Tech News Aggregated from Multiple Sources</p>
+        </header>
+
+        <div class="status-banner" id="newsStatus">Loading news from the local backend...</div>
+        <div class="news-grid" id="newsGrid"></div>
+
+        <div class="spell-checker">
+            <h2>Spell Checker</h2>
+            <p style="color: #ccc; margin-bottom: 20px;">Enter a word to check its spelling using an online dictionary API</p>
+            <form class="spell-check-form" onsubmit="checkSpelling(event)">
+                <input type="text" id="spellInput" placeholder="Enter a word to check..." required>
+                <button type="submit">Check Spelling</button>
+            </form>
+            <div id="spellResult" class="spell-result">
+                <h3>Result:</h3>
+                <span class="word" id="checkedWord"></span>
+                <p id="spellStatus" class="status"></p>
+                <div id="suggestions" class="suggestions"></div>
+            </div>
+        </div>
+
+        <div class="llm-analysis">
+            <h2>🤖 LLM Comparative Analysis: Scratch vs LLM-Generated Code</h2>
+
+            <div class="analysis-section">
+                <h3>1. Code Written from Scratch</h3>
+                <p><strong>Advantages:</strong></p>
+                <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                    <li>Complete control over every line of code</li>
+                    <li>Better understanding of the codebase</li>
+                    <li>No dependencies on external AI tools</li>
+                    <li>Can be optimized for specific requirements</li>
+                </ul>
+                <p style="margin-top: 10px;"><strong>Disadvantages:</strong></p>
+                <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                    <li>Time-consuming development process</li>
+                    <li>Higher chance of bugs and errors</li>
+                    <li>Requires deep expertise in multiple areas</li>
+                    <li>More difficult to implement advanced features like AI comments</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>2. Code Generated by Large Language Model</h3>
+                <p><strong>Advantages:</strong></p>
+                <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                    <li>Significantly faster development time</li>
+                    <li>Consistent code quality and style</li>
+                    <li>Can generate complex features quickly</li>
+                    <li>Handles boilerplate code efficiently</li>
+                    <li>Available 24/7 for assistance</li>
+                </ul>
+                <p style="margin-top: 10px;"><strong>Disadvantages:</strong></p>
+                <ul style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                    <li>May require verification of generated code</li>
+                    <li>Potential for hallucinated or outdated information</li>
+                    <li>Less personalized to specific use cases</li>
+                    <li>Requires understanding of prompts for best results</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>3. Comparison Table</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Aspect</th>
+                        <th>From Scratch</th>
+                        <th>LLM-Generated</th>
+                    </tr>
+                    <tr>
+                        <td>Development Time</td>
+                        <td>Long (Days to Weeks)</td>
+                        <td>Short (Hours to Days)</td>
+                    </tr>
+                    <tr>
+                        <td>Code Quality</td>
+                        <td>Variable (Depends on developer)</td>
+                        <td>Consistent</td>
+                    </tr>
+                    <tr>
+                        <td>Maintenance</td>
+                        <td>Easier (self-written)</td>
+                        <td>Requires understanding</td>
+                    </tr>
+                    <tr>
+                        <td>Cost</td>
+                        <td>Higher (Man-hours)</td>
+                        <td>Lower (AI assistance)</td>
+                    </tr>
+                    <tr>
+                        <td>Innovation</td>
+                        <td>Higher potential</td>
+                        <td>Based on training data</td>
+                    </tr>
+                    <tr>
+                        <td>Error Rate</td>
+                        <td>Higher</td>
+                        <td>Lower (with verification)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="analysis-section">
+                <h3>4. Conclusion</h3>
+                <p style="color: #ccc; line-height: 1.8;">
+                    Both approaches have their place in modern software development. LLM-generated code excels at
+                    accelerating development and reducing boilerplate, while hand-written code provides deeper control
+                    and understanding. The best approach is often a hybrid: using LLMs for rapid prototyping and
+                    common patterns, while maintaining human oversight for critical components and unique requirements.
+                    This project itself demonstrates a collaboration between human intent and AI assistance.
+                </p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Tech News Aggregator - Aggregating live information from TechCrunch, The Verge, and WIRED</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Source Code: Web.py (Web Scraping Class) + index.html (Frontend)</p>
+        </footer>
+    </div>
+
+    <div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
+        <img id="zoomedImage" src="" alt="">
+    </div>
+
+    <script>
+        const aiComments = {
+            tech: [
+                "This is fascinating! The pace of technological advancement is truly remarkable.",
+                "Incredible innovation happening in this space!",
+                "This development could change everything we know about technology.",
+                "The future of tech is being shaped right before our eyes.",
+                "Amazing how quickly technology evolves and transforms our lives."
+            ],
+            security: [
+                "Security should always be a top priority for every organization.",
+                "This highlights the importance of proactive cybersecurity measures.",
+                "Staying informed about security threats is crucial in today's digital world.",
+                "Great reminder that we all need to take security seriously.",
+                "The cybersecurity landscape is constantly evolving."
+            ],
+            cloud: [
+                "Cloud technology is reshaping how businesses operate in the digital age.",
+                "The shift to cloud-based solutions is accelerating across all industries.",
+                "Scalability and cost efficiency are driving massive cloud adoption.",
+                "Cloud services have become essential for modern business operations.",
+                "The cloud revolution continues to transform IT infrastructure."
+            ],
+            startup: [
+                "The startup ecosystem continues to show remarkable resilience and innovation.",
+                "Entrepreneurs are finding new ways to solve complex problems.",
+                "Venture capital interest in tech remains strong despite challenges.",
+                "Startups are driving innovation across multiple sectors.",
+                "The entrepreneurial spirit remains vibrant in the tech industry."
+            ],
+            development: [
+                "The evolution of programming languages reflects the growing complexity of modern software.",
+                "Developers have more powerful tools than ever before.",
+                "Modern development practices are transforming how we build software.",
+                "The developer experience continues to improve with new tools and frameworks.",
+                "Software development best practices are constantly advancing."
+            ],
+            mobile: [
+                "5G technology will transform how we connect and interact with the world around us.",
+                "The next generation of mobile connectivity is just beginning.",
+                "Faster networks will enable new applications we haven't even imagined yet.",
+                "Mobile technology continues to evolve at a rapid pace.",
+                "The impact of 5G will be felt across every industry."
+            ]
+        };
+
+        const sourceImages = {
+            techcrunch: [
+                "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800",
+                "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800"
+            ],
+            theverge: [
+                "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800",
+                "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800"
+            ],
+            engadget: [
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800",
+                "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800"
+            ],
+            wired: [
+                "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800",
+                "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800"
+            ],
+            default: [
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800"
+            ]
+        };
+
+        const soundBySource = {
+            techcrunch: "/assets/audio/startup_news.wav",
+            theverge: "/assets/audio/security_alert.wav",
+            engadget: "/assets/audio/dev_update.wav",
+            wired: "/assets/audio/cloud_update.wav",
+            default: "/assets/audio/ai_comment.wav"
+        };
+
+        function getRandomComment(category) {
+            const comments = aiComments[category] || aiComments.tech;
+            return comments[Math.floor(Math.random() * comments.length)];
+        }
+
+        function getSourceKey(source) {
+            return (source || "").toLowerCase().replace(/\s+/g, "");
+        }
+
+        function getCategoryKey(item) {
+            const text = `${item.category || ""} ${item.title || ""}`.toLowerCase();
+            if (text.includes("security") || text.includes("ddos")) return "security";
+            if (text.includes("cloud")) return "cloud";
+            if (text.includes("startup") || text.includes("fund")) return "startup";
+            if (text.includes("develop") || text.includes("program")) return "development";
+            if (text.includes("5g") || text.includes("mobile")) return "mobile";
+            return "tech";
+        }
+
+        function getBadgeClass(sourceKey) {
+            if (sourceKey.includes("techcrunch")) return "source-techcrunch";
+            if (sourceKey.includes("verge")) return "source-verge";
+            if (sourceKey.includes("engadget")) return "source-engadget";
+            if (sourceKey.includes("wired")) return "source-wired";
+            return "source-techcrunch";
+        }
+
+        function getImageForItem(item, index) {
+            const sourceKey = getSourceKey(item.source);
+            const options = sourceImages[sourceKey] || sourceImages.default;
+            return options[index % options.length];
+        }
+
+        function zoomImage(src, alt) {
+            const overlay = document.getElementById("zoomOverlay");
+            const img = document.getElementById("zoomedImage");
+            img.src = src;
+            img.alt = alt || "";
+            overlay.classList.add("active");
+        }
+
+        function closeZoom() {
+            document.getElementById("zoomOverlay").classList.remove("active");
+        }
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                closeZoom();
+            }
+        });
+
+        function playAudioFile(audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(() => {
+                window.open(audioUrl, "_blank");
+            });
+        }
+
+        function createTextElement(tagName, className, text) {
+            const element = document.createElement(tagName);
+            element.className = className;
+            element.textContent = text;
+            return element;
+        }
+
+        function buildNewsCard(item, index) {
+            const sourceKey = getSourceKey(item.source);
+            const categoryKey = getCategoryKey(item);
+            const imageUrl = getImageForItem(item, index);
+            const audioUrl = soundBySource[sourceKey] || soundBySource.default;
+            const card = document.createElement("div");
+            card.className = "news-card";
+            card.dataset.source = sourceKey;
+
+            const imageContainer = document.createElement("div");
+            imageContainer.className = "news-image-container";
+
+            const image = document.createElement("img");
+            image.src = imageUrl;
+            image.alt = item.title || "Tech news";
+            image.className = "news-image";
+            image.addEventListener("click", () => zoomImage(imageUrl, image.alt));
+            imageContainer.appendChild(image);
+
+            const content = document.createElement("div");
+            content.className = "news-content";
+
+            const sourceWrapper = document.createElement("div");
+            sourceWrapper.className = "news-source";
+            const sourceBadge = document.createElement("span");
+            sourceBadge.className = `source-badge ${getBadgeClass(sourceKey)}`;
+            sourceBadge.textContent = item.source || "Unknown Source";
+            sourceWrapper.appendChild(sourceBadge);
+
+            const title = document.createElement("h3");
+            title.className = "news-title";
+            const titleLink = document.createElement("a");
+            titleLink.href = item.link || "#";
+            titleLink.target = "_blank";
+            titleLink.rel = "noopener noreferrer";
+            titleLink.textContent = item.title || "Untitled article";
+            if (!item.link) {
+                titleLink.removeAttribute("target");
+            }
+            title.appendChild(titleLink);
+
+            const description = createTextElement(
+                "p",
+                "news-description",
+                item.description || "No description available from this source."
+            );
+
+            const commentSection = document.createElement("div");
+            commentSection.className = "comment-section";
+            const commentIcon = document.createElement("span");
+            commentIcon.className = "comment-icon";
+            commentIcon.textContent = "💬";
+            const commentText = document.createElement("span");
+            commentText.className = "ai-comment";
+            commentText.textContent = item.ai_comment || getRandomComment(categoryKey);
+            commentSection.append(commentIcon, commentText);
+
+            const mediaLinks = document.createElement("div");
+            mediaLinks.className = "media-links";
+
+            const soundLink = document.createElement("a");
+            soundLink.href = audioUrl;
+            soundLink.className = "media-link";
+            soundLink.textContent = "🔊 Play Audio";
+            soundLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                playAudioFile(audioUrl);
+            });
+
+            const articleLink = document.createElement("a");
+            articleLink.className = `media-link${item.link ? "" : " disabled"}`;
+            articleLink.textContent = item.link ? "📰 Read Article" : "📰 Link Unavailable";
+            if (item.link) {
+                articleLink.href = item.link;
+                articleLink.target = "_blank";
+                articleLink.rel = "noopener noreferrer";
+            } else {
+                articleLink.href = "#";
+                articleLink.setAttribute("aria-disabled", "true");
+            }
+
+            mediaLinks.append(soundLink, articleLink);
+
+            const meta = document.createElement("div");
+            meta.className = "news-meta";
+            const date = document.createElement("span");
+            date.textContent = item.pubDate || "Date unavailable";
+            const category = document.createElement("span");
+            category.textContent = item.category || "Technology";
+            meta.append(date, category);
+
+            content.append(sourceWrapper, title, description, commentSection, mediaLinks, meta);
+            card.append(imageContainer, content);
+            return card;
+        }
+
+        function renderEmptyState(message) {
+            const newsGrid = document.getElementById("newsGrid");
+            newsGrid.innerHTML = "";
+            const emptyCard = document.createElement("div");
+            emptyCard.className = "news-card news-card-empty";
+            emptyCard.appendChild(createTextElement("p", "news-description", message));
+            newsGrid.appendChild(emptyCard);
+        }
+
+        function renderNews(items) {
+            const newsGrid = document.getElementById("newsGrid");
+            newsGrid.innerHTML = "";
+
+            if (!items.length) {
+                renderEmptyState("No news is available yet. Run the scraper to generate fresh results.");
+                return;
+            }
+
+            items.forEach((item, index) => {
+                newsGrid.appendChild(buildNewsCard(item, index));
+            });
+        }
+
+        async function loadNews() {
+            const status = document.getElementById("newsStatus");
+            status.textContent = "Loading news from the local backend...";
+
+            try {
+                const response = await fetch("/api/news");
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const payload = await response.json();
+                const items = Array.isArray(payload.items) ? payload.items : [];
+                renderNews(items);
+                status.textContent = `Loaded ${items.length} news items from the local backend.`;
+            } catch (error) {
+                renderEmptyState("Unable to load backend news. Start app.py and refresh the page.");
+                status.textContent = "Failed to connect to the local backend.";
+            }
+        }
+
+        async function checkSpelling(event) {
+            event.preventDefault();
+            const word = document.getElementById("spellInput").value.trim().toLowerCase();
+            const resultDiv = document.getElementById("spellResult");
+            const wordSpan = document.getElementById("checkedWord");
+            const statusP = document.getElementById("spellStatus");
+            const suggestionsDiv = document.getElementById("suggestions");
+
+            if (!word) return;
+
+            resultDiv.style.display = "none";
+            resultDiv.className = "spell-result";
+            wordSpan.textContent = word;
+            statusP.innerHTML = '<span style="color: #d7e6ff;">Checking through the local backend...</span>';
+            suggestionsDiv.innerHTML = "";
+            resultDiv.style.display = "block";
+
+            try {
+                const response = await fetch("/api/spell-check", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ word })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.correct) {
+                    resultDiv.className = "spell-result correct";
+                    statusP.innerHTML = '<span style="color: #00ff64;">✓ Correct spelling!</span>';
+                    const partOfSpeech = data.partOfSpeech || "word";
+                    const definition = data.definition || "No definition available";
+                    suggestionsDiv.innerHTML = `<strong>Definition:</strong> ${definition}<br><strong>Part of Speech:</strong> ${partOfSpeech}`;
+                } else {
+                    resultDiv.className = "spell-result incorrect";
+                    statusP.innerHTML = '<span style="color: #ff6464;">✗ Incorrect spelling or word not found</span>';
+                    suggestionsDiv.innerHTML = "<p>Please check the spelling and try again.</p><p>Suggestions: Try simpler words or check for typos.</p>";
+                }
+            } catch (error) {
+                resultDiv.className = "spell-result incorrect";
+                statusP.innerHTML = '<span style="color: #ff6464;">✗ Backend spell check failed</span>';
+                suggestionsDiv.innerHTML = "<p>The local backend could not complete the spell check.</p><p>Please confirm the Flask server is running and try again.</p>";
+            }
+        }
+
+        loadNews();
+    </script>
+</body>
+</html>

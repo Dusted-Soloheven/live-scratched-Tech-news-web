@@ -1,0 +1,32 @@
+Project (15%): Creating a web page from other web sites
+Overview
+The goal of this project is to gather the live information from the Internet to create
+new web contents based on the theme you choose. That’s how web sites like Google
+News (http://news.google.com) work. You are requested to submit the codes and the
+output results.
+1. Create a new class called Web. Put the new methods in this class.
+2. Create a web page of the information you think important from at least three
+other web sites (3%).
+3. Add pictures, a link to the sound file which will play the sound when the user
+clicks on the link, add something that will make random, relevant comments
+about your theme depending on the live contents (3%).
+4. Zoom in on the image when you click or move the mouse over it. (1%).
+5. Develop a program that prompts the user to enter a word for spell checking.
+The program should integrate an online dictionary through the website
+backend to verify the spelling and display the result on the webpage. You may
+use additional web development technologies to create dynamic and
+interactive web pages (2%).
+6. Implement the above functionality through the automatic generation of code
+using a large language model. In addition, a comparative analysis is presented
+to evaluate the advantages and disadvantages of building a website from
+scratch versus generating it with a large language model (6%).
+Required prompt:
+When generating the web crawler code, the crawler must comply with responsible web
+scraping practices:
+• Respect the website’s robots.txt and terms of service.
+• Do not bypass CAPTCHA, authentication systems, or anti-bot protections.
+• Avoid excessive requests by implementing rate limiting and delays.
+• Only access publicly available data.
+• Do not attempt to hack, exploit, or crack any website.
+• The generated code should prioritize compliance, transparency, and server-
+friendly behavior.
